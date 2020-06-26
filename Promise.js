@@ -84,7 +84,7 @@ module.exports = (function() {
             try {
                 executor(this.resolve, this.reject);
             } catch(err) {
-                reject(err);
+                this.reject(err);
             }
         }
 
