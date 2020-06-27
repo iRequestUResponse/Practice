@@ -89,16 +89,25 @@ module.exports = (function() {
         }
 
         Promise.prototype.then = function(resolve, reject) {
+            if (typeof resolve !== 'function') return this;
+            
             var promise = new Promise(PROMISE);
 
             var resolveTask = this.createTask(function(value) {
                 var resolvedValue = resolve(value);
                 promise.resolve(resolvedValue);
             });
-            var rejectTask = this.createTask(function(value) {
-                var rejectedValue = reject(value);
-                promise.resolve(rejectedValue); // resolve 맞음
-            });
+            var rejectTask;
+            if (typeof reject === 'function') {
+                rejectTask = this.createTask(function(value) {
+                    var rejectedValue = reject(value);
+                    promise.resolve(rejectedValue); // resolve 맞음
+                });
+            } else {
+                rejectTask = this.createTask(function(value) {
+                    promise.reject(value);
+                });
+            }
             
             switch (this.status) {
             case 'pending':
@@ -119,6 +128,8 @@ module.exports = (function() {
         }
 
         Promise.prototype.catch = function(resolve) {
+            if (typeof resolve !== 'function') return this;
+
             var promise = new Promise(PROMISE);
 
             var resolveTask = this.createTask(function(value) {
